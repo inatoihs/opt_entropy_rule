@@ -198,23 +198,22 @@ def find_optimal_range(data):
     for i in range(4):
         tangent_point_pairs.append((tangent_points[i % 4], tangent_points[(i + 1) % 4]))
     subchains = list(zip(intersections, tangent_point_pairs, intersection_entropies, thetas))
-    #print("tangent_points",tangent_points)  # for debug
+    print("tangent_points",tangent_points)  # for debug
 
     # Step 4
     """交点Iのエントロピーがvbestsofarよりも高いなら、その交点に対応するsub-chainを枝刈りする。
     このため、sub-chainを管理するデータ構造も必要になるでしょう。
     もしもsub-chainがひとつもない場合、ここで探索を終了しvbestsofarに対応するルール（範囲）を出力します。"""
     while True:
-        #print("subchain:", subchains, "\nentropy", v_best_sofar) # for debug
+        print("subchain:", subchains, "\nentropy", v_best_sofar) # for debug
         for current_subchain in subchains:
             if current_subchain[2] > v_best_sofar:
                 subchains.remove(current_subchain)
         if not subchains:
             # for debug
-            #print("convex hull:\n", tangent_points)
+            print("convex hull:\n", tangent_points)
             # output the best rule
             return (point_of_v, v_best_sofar)
-        #print("pruned:", subchains) # for debug
 
         # Step 5
         """エントロピーが最も低いIを選択します。ここで、I_ijが選択されたとします。θ=(iからj)
@@ -242,7 +241,7 @@ def find_optimal_range(data):
         if entropy < v_best_sofar:
             v_best_sofar = entropy
             point_of_v = Pmid
-        #print("Pmid: ", Pmid, (x1, y1), (x2, y2))  # for debug
+        print("Pmid: ", Pmid, (x1, y1), (x2, y2))  # for debug
         
         # Step 6
         """Pmidが新たなスタンプポイントであれば、Iijに対応するsub-chainをIimid,Imidjに対応する2つのsub-chainに分割します。
@@ -250,7 +249,7 @@ def find_optimal_range(data):
         ステップ４に戻ります"""
         if Pmid not in tangent_points:
             tangent_points.append(Pmid)
-            #print("selected:",selected_subchain) #for debug
+            print("selected:",selected_subchain) #for debug
             left_mid_intersection = find_intersection(
                 selected_subchain[3][0], theta, (x1, y1), Pmid
             )
