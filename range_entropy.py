@@ -61,7 +61,7 @@ def bucketing(data, num_buckets):
 def check_range(data, start, end):
     pass
 
-
+#TODO: 複数の点を扱えるように
 def compute_entropy(X, A):
     x1, x2 = X
     a1, a2 = A
