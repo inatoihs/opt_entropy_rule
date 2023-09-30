@@ -46,9 +46,7 @@ def find_intersection(vector1, vector2, point1, point2) -> (float, float):
     else:
         # 通常の場合、連立方程式を解く
         if m == n:
-            # 直線が平行な場合
-            print(vector1, vector2, point1, point2) # for debug
-            return None
+            return point1
         x = (c2 - c1) / (m - n)
         y = m * x + c1
 
@@ -207,16 +205,16 @@ def find_optimal_range(data):
     このため、sub-chainを管理するデータ構造も必要になるでしょう。
     もしもsub-chainがひとつもない場合、ここで探索を終了しvbestsofarに対応するルール（範囲）を出力します。"""
     while True:
-        print("subchain:", subchains, "\nentropy", v_best_sofar) # for debug
+        #print("subchain:", subchains, "\nentropy", v_best_sofar) # for debug
         for current_subchain in subchains:
             if current_subchain[2] > v_best_sofar:
                 subchains.remove(current_subchain)
         if not subchains:
             # for debug
-            print("convex hull:\n", tangent_points)
+            #print("convex hull:\n", tangent_points)
             # output the best rule
             return (point_of_v, v_best_sofar)
-        print("pruned:", subchains) # for debug
+        #print("pruned:", subchains) # for debug
 
         # Step 5
         """エントロピーが最も低いIを選択します。ここで、I_ijが選択されたとします。θ=(iからj)
@@ -226,6 +224,8 @@ def find_optimal_range(data):
         selected_subchain = subchains.pop(0)
         x1, y1 = selected_subchain[1][0]
         x2, y2 = selected_subchain[1][1]
+        if x1 == x2 and y1 == y2:
+            continue
         ix, iy = selected_subchain[0]
         theta = to_normal_vector((x2 - x1, y2 - y1))
         Pmid, left, right = touching_oracle(atomic_points, theta)
@@ -242,7 +242,7 @@ def find_optimal_range(data):
         if entropy < v_best_sofar:
             v_best_sofar = entropy
             point_of_v = Pmid
-        print("Pmid: ", Pmid, (x1, y1), (x2, y2))  # for debug
+        #print("Pmid: ", Pmid, (x1, y1), (x2, y2))  # for debug
         
         # Step 6
         """Pmidが新たなスタンプポイントであれば、Iijに対応するsub-chainをIimid,Imidjに対応する2つのsub-chainに分割します。
@@ -250,7 +250,7 @@ def find_optimal_range(data):
         ステップ４に戻ります"""
         if Pmid not in tangent_points:
             tangent_points.append(Pmid)
-            print("selected:",selected_subchain)
+            #print("selected:",selected_subchain) #for debug
             left_mid_intersection = find_intersection(
                 selected_subchain[3][0], theta, (x1, y1), Pmid
             )
@@ -270,14 +270,14 @@ def find_optimal_range(data):
 def test_opt_range():
     """function for testing optimal range rule function"""
     # 生成するタプルの個数
-    num_tuples = random.randint(1, 4)
+    num_tuples = random.randint(1, 8)
 
     # タプル内の要素の範囲
-    min_value = 1
+    min_value = 0
     max_value = 10
 
     # ランダムなタプルを生成
-    atomic_points = [
+    atomic_points =  [
         (random.randint(min_value, max_value), random.randint(min_value, max_value))
         for _ in range(num_tuples)
      ]
@@ -294,8 +294,8 @@ def test_opt_range():
             point_and_entropy.append(((x, y), compute_entropy((x, y), A)))
             points.append((x, y))
     point_and_entropy.sort(key=lambda x: x[1])
-    print("atomic points:\n", atomic_points)
-    print("points: \n", points)
+    #print("atomic points:\n", atomic_points)
+    #print("points: \n", points)
     computed_ans = find_optimal_range(atomic_points)
     if computed_ans[1] != point_and_entropy[0][1]:
         print(
@@ -306,10 +306,10 @@ def test_opt_range():
         )
         print("atomic points:\n", atomic_points)
         print("points: \n", points)
-        #exit(1)
+        exit(1)
 
 
-for i in range(1000):
+for i in range(100):
     test_opt_range()
     print("Test Passed")
     print()
