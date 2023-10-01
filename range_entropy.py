@@ -1,11 +1,6 @@
 import numpy as np
 import random
 
-class Tangent:
-    def __init__(self, coordinate, theta) -> None:
-        self.coordinate = coordinate
-        self.theta = theta
-
 
 def to_normal_vector(vector):
     y, x = vector
@@ -53,17 +48,6 @@ def find_intersection(vector1, vector2, point1, point2) -> (float, float):
     return (x, y)
 
 
-# Bucketing function to discretize the data
-# TODO: how to bucketize?
-# input_data is like [(1.1, True), (2.3, False), (3.5, True), (6.7, True), (9.2, True)]
-def bucketing(data, num_buckets):
-    pass
-
-
-# TODO: バケツのレンジルールから数値のレンジルールに変換
-def check_range(data, start, end):
-    pass
-
 
 def compute_entropy(X, A):
     x1, x2 = X
@@ -103,7 +87,7 @@ def compute_entropy(X, A):
 
     return entropy
 
-#TODO: 複数の点を扱えるように
+
 def touching_oracle(atomic_points: list, theta: (float, float)):
     """Touching Oracle function"""
     # 内積を計算して最大部分和を求める
@@ -145,7 +129,6 @@ def touching_oracle(atomic_points: list, theta: (float, float)):
 # Main algorithm
 def find_optimal_range(data):
     """function for one dimensional optimal rule"""
-    # num_buckets = len(data) TODO: bucketize
     atomic_points = data
     A = (sum(item[0] for item in atomic_points), sum(item[1] for item in atomic_points))
     v_best_sofar = float("inf")
