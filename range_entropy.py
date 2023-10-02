@@ -1,16 +1,18 @@
 # print文はdebug用なので消して良い
 
-import numpy as np
 import random
+import numpy as np
 
 
 def to_normal_vector(vector):
+    """convert vector to normal vector"""
     y, x = vector
     y = -y
     return (x, y)
 
 
 def is_point_on_edge(x1, y1, x2, y2, x, y, abXat, bcXbt):
+    """check if the point is on the edge"""
     # 点が直線上にあるかどうかを判定
     is_on_line = abXat * bcXbt == 0.0
 
@@ -65,6 +67,7 @@ def find_intersection(vector1, vector2, point1, point2) -> (float, float):
 
 
 def compute_entropy(X, A):
+    """compute entropy of X"""
     x1, x2 = X
     a1, a2 = A
     total_X = x1 + x2
@@ -81,15 +84,15 @@ def compute_entropy(X, A):
         entropy_X = -(1 / total_A) * (
             x1 * np.log(x1 / total_X) + x2 * np.log(x2 / total_X)
         )
-    if x1 == a1 and x2 == a2:
+    if abs(x1 - a1) < 0.00000001 and abs(x2 - a2) < 0.00000001:
         entropy_A_X = 0
     elif total_A - total_X <= 0:
         entropy_A_X = -float("inf")
-    elif x1 == a1:
+    elif abs(x1 - a1) < 0.00000001:
         entropy_A_X = (
             -(1 / total_A) * (a2 - x2) * np.log((a2 - x2) / (total_A - total_X))
         )
-    elif x2 == a2:
+    elif abs(x2 - a2) < 0.00000001:
         entropy_A_X = (
             -(1 / total_A) * (a1 - x1) * np.log((a1 - x1) / (total_A - total_X))
         )
@@ -101,6 +104,14 @@ def compute_entropy(X, A):
     entropy = entropy_X + entropy_A_X
 
     return entropy
+
+
+# q: compute_entropy() 関数のnp.log((a1 - x1) / (total_A - total_X))でエラーが起きることがあるが、これを防ぐには？
+# a: 以下のようにする
+# if (a1 - x1) / (total_A - total_X) <= 0:
+#     entropy_A_X = 0
+# else:
+#     entropy_A_X = -(1 / total_A) * (a1 - x1) * np.log((a1 - x1) / (total_A - total_X))
 
 
 def touching_oracle(atomic_points: list, theta: (float, float)):
@@ -294,7 +305,7 @@ def test_opt_range():
     # print("atomic points:\n", atomic_points)
     # print("points: \n", points)
     computed_ans = find_optimal_range(atomic_points)
-    if abs(computed_ans[1] - point_and_entropy[0][1]) > 0.000000000000001:
+    if computed_ans[1] != point_and_entropy[0][1]:
         print(
             "Computed solution:   ",
             computed_ans,
