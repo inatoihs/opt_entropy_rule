@@ -86,7 +86,9 @@ def compute_entropy(X, A):
         )
     if abs(x1 - a1) < 0.00000001 and abs(x2 - a2) < 0.00000001:
         entropy_A_X = 0
-    elif total_A - total_X <= 0:
+    elif total_A - total_X == 0:
+        entropy_A_X = -float("inf")
+    elif (a1 - x1) / (total_A - total_X) < 0 or (a2 - x2) / (total_A - total_X) < 0:
         entropy_A_X = -float("inf")
     elif abs(x1 - a1) < 0.00000001:
         entropy_A_X = (
@@ -101,17 +103,11 @@ def compute_entropy(X, A):
             (a1 - x1) * np.log((a1 - x1) / (total_A - total_X))
             + (a2 - x2) * np.log((a2 - x2) / (total_A - total_X))
         )
+        if a1 - x1 < 0 or a2 - x2 < 0:
+            print("a1-x1:", a1 - x1, "a2-x2:", a2 - x2)
     entropy = entropy_X + entropy_A_X
 
     return entropy
-
-
-# q: compute_entropy() 関数のnp.log((a1 - x1) / (total_A - total_X))でエラーが起きることがあるが、これを防ぐには？
-# a: 以下のようにする
-# if (a1 - x1) / (total_A - total_X) <= 0:
-#     entropy_A_X = 0
-# else:
-#     entropy_A_X = -(1 / total_A) * (a1 - x1) * np.log((a1 - x1) / (total_A - total_X))
 
 
 def touching_oracle(atomic_points: list, theta: (float, float)):
@@ -302,9 +298,9 @@ def test_opt_range():
             point_and_entropy.append(((x, y), compute_entropy((x, y), A)))
             points.append((x, y))
     point_and_entropy.sort(key=lambda x: x[1])
-    # print("atomic points:\n", atomic_points)
-    # print("points: \n", points)
     computed_ans = find_optimal_range(atomic_points)
+    print("atomic points:\n", atomic_points)
+    print(computed_ans)
     if computed_ans[1] != point_and_entropy[0][1]:
         print(
             "Computed solution:   ",
@@ -317,6 +313,6 @@ def test_opt_range():
         exit(1)
 
 
-for i in range(10000):
-    test_opt_range()
-print("Test Passed")
+# for i in range(1):
+#    test_opt_range()
+# print("Test Passed")

@@ -1,5 +1,6 @@
 import sys
 
+
 class Region:
     def __init__(self, length):
         self.gsum = 0.0
@@ -13,6 +14,7 @@ class Region:
         print("xoff =", self.l)
         for x in range(self.l, self.r + 1):
             print(f"[{self.bot[x]}, {self.top[x]}]")
+
 
 class Matrix:
     def __init__(self, x, y=None):
@@ -32,7 +34,7 @@ class Matrix:
         return self.val[y + x * self.ysize]
 
     def load_from_file(self, file_name):
-        with open(file_name, 'r') as file:
+        with open(file_name, "r") as file:
             lines = file.readlines()
             self.xsize, self.ysize = map(int, lines[0].split())
             self.val = [0] * (self.xsize * self.ysize)
@@ -42,6 +44,7 @@ class Matrix:
                 for x, value in enumerate(values):
                     self.set(x, y, value)
 
+
 def main():
     if len(sys.argv) != 2:
         print("Usage : opt_region [matrix file]")
@@ -50,16 +53,14 @@ def main():
 
     matrix_file = sys.argv[1]
 
-
     grid = Matrix(matrix_file)
-    grid_cumsum = Matrix(grid.xsize, grid.ysize) #累積和
-    t = Matrix(grid.xsize, grid.ysize) #top
-    b = Matrix(grid.xsize, grid.ysize) #bot
-    f = Matrix(grid.xsize, grid.ysize) 
+    grid_cumsum = Matrix(grid.xsize, grid.ysize)  # 累積和
+    t = Matrix(grid.xsize, grid.ysize)  # top
+    b = Matrix(grid.xsize, grid.ysize)  # bot
+    f = Matrix(grid.xsize, grid.ysize)
     fj = Matrix(grid.xsize, grid.ysize)
     ft = Matrix(grid.xsize, grid.ysize)
     fb = Matrix(grid.xsize, grid.ysize)
-
 
     x = 0
     y = 0
@@ -93,7 +94,7 @@ def main():
                 maxi = y
             b.set(x, y, maxi)
 
-    gmax = -float('inf')
+    gmax = -float("inf")
     gmaxi = -1
     gmaxm = -1
 
@@ -104,15 +105,18 @@ def main():
         ft.set(0, y, t.ref(0, y))
         fb.set(0, y, b.ref(0, y))
         # cover
-        f.set(0, y, grid_cumsum.ref(0, int(ft.ref(0, y))) 
-              - grid_cumsum.ref(0, int(fb.ref(0, y)) - 1))
+        f.set(
+            0,
+            y,
+            grid_cumsum.ref(0, int(ft.ref(0, y)))
+            - grid_cumsum.ref(0, int(fb.ref(0, y)) - 1),
+        )
         if f.ref(0, y) > gmax:
             gmax = f.ref(0, y)
             gmaxi = y
             gmaxm = 0
 
-
-    # m >= 1 
+    # m >= 1
     for x in range(1, grid.xsize):
         # examine (i > j)
         maxj = 0
@@ -121,26 +125,29 @@ def main():
         if fval < 0:
             fval = 0.0
             fj.set(x, 0, -1)
-        cval = grid_cumsum.ref(x, int(t.ref(x, 0))) \
-            - grid_cumsum.ref(x, int(b.ref(x, 0)) - 1)
-        print(x,f.val)
+        cval = grid_cumsum.ref(x, int(t.ref(x, 0))) - grid_cumsum.ref(
+            x, int(b.ref(x, 0)) - 1
+        )
+        # print(x, f.val)
         f.set(x, 0, fval + cval)
-        print(x,f.val)
+        # print(x, f.val)
         ft.set(x, 0, t.ref(x, 0))
         fb.set(x, 0, b.ref(x, 0))
         for i in range(1, grid.ysize):
             # i=j
             fval = f.ref(x - 1, i)  # f(j, <= m-1)
-            cval = grid_cumsum.ref(x, int(t.ref(x, i))) \
-                - grid_cumsum.ref(x, int(b.ref(x, i)) - 1)
+            cval = grid_cumsum.ref(x, int(t.ref(x, i))) - grid_cumsum.ref(
+                x, int(b.ref(x, i)) - 1
+            )
             if fval < 0:
                 dval = cval
             else:
                 dval = fval + cval
             # examine maxj
             fval2 = f.ref(x - 1, maxj)  # f(j, <= m-1)
-            cval2 = grid_cumsum.ref(x, int(t.ref(x, i))) \
-                - grid_cumsum.ref(x, int(b.ref(x, maxj)) - 1)
+            cval2 = grid_cumsum.ref(x, int(t.ref(x, i))) - grid_cumsum.ref(
+                x, int(b.ref(x, maxj)) - 1
+            )
             if fval2 < 0:
                 dval2 = cval2
             else:
@@ -165,16 +172,18 @@ def main():
         for i in range(grid.ysize - 1, -1, -1):
             # i=j
             fval = f.ref(x - 1, i)  # f(j, <= m-1)
-            cval = grid_cumsum.ref(x, int(t.ref(x, i))) \
-                - grid_cumsum.ref(x, int(b.ref(x, i)) - 1)
+            cval = grid_cumsum.ref(x, int(t.ref(x, i))) - grid_cumsum.ref(
+                x, int(b.ref(x, i)) - 1
+            )
             if fval < 0:
                 dval = cval
             else:
                 dval = fval + cval
             # examine maxj
             fval2 = f.ref(x - 1, maxj)  # f(j, <= m-1)
-            cval2 = grid_cumsum.ref(x, int(t.ref(x, maxj))) \
-                - grid_cumsum.ref(x, int(b.ref(x, i)) - 1)
+            cval2 = grid_cumsum.ref(x, int(t.ref(x, maxj))) - grid_cumsum.ref(
+                x, int(b.ref(x, i)) - 1
+            )
             if fval2 < 0:
                 dval2 = cval2
             else:
@@ -209,5 +218,7 @@ def main():
         r.bot[x] = int(fb.ref(x, gmaxi))
 
     r.print_region()
+
+
 if __name__ == "__main__":
     main()
