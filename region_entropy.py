@@ -249,6 +249,7 @@ def find_optimal_region(positive, negative):
     entropies = []
     theta_list = [(1, 1), (1, -1), (-1, -1), (-1, 1)]
     thetas = []
+    regions = []
 
     # Step 1
     """ステップ１
@@ -265,10 +266,12 @@ def find_optimal_region(positive, negative):
         tangent_points.append(current_tangent_point)
         entropy = compute_entropy(current_tangent_point, A)
         entropies.append(entropy)
+        regions.append(region)
 
     best_index = entropies.index(min(entropies))
     v_best_sofar = entropies[best_index]
-    point_of_v = tangent_points[best_index]
+    point_of_best_v = tangent_points[best_index]
+    best_region = regions[best_index]
 
     # Step 2
     """P1,P2,P3,P4に対応する接線L1,L2,L3,L4の交点をそれぞれ求めます。
@@ -313,7 +316,7 @@ def find_optimal_region(positive, negative):
             # print("convex hull:\n", tangent_points)
 
             # output the best rule
-            return (point_of_v, v_best_sofar)
+            return (point_of_best_v, v_best_sofar, region)
 
         # Step 5
         """エントロピーが最も低いIを選択します。ここで、I_ijが選択されたとします。θ=(iからj)
@@ -334,7 +337,8 @@ def find_optimal_region(positive, negative):
         entropy = compute_entropy(Pmid, A)
         if entropy < v_best_sofar:
             v_best_sofar = entropy
-            point_of_v = Pmid
+            point_of_best_v = Pmid
+            best_region = region
         # print("Pmid: ", Pmid, (x1, y1), (x2, y2), (theta[0], theta[1]))  # for debug
 
         # Step 6

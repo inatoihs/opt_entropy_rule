@@ -42,7 +42,9 @@ summary = []
 for i in range(x_bucket_num):
     summary.append(result_tuples[i * y_bucket_num : (i + 1) * y_bucket_num])
 
-print(find_optimal_region(positive, negative))
+_, _, region = find_optimal_region(positive, negative)
+
+print(region.l, region.bot, region.top)
 
 """
 # 'Outcome' 列が 1 と 0 の場合に分割して集計
