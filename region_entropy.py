@@ -370,21 +370,7 @@ def find_optimal_region(positive, negative):
             )
 
 
-"""
--4 -2  1  6  4 -6  3  4  8 -2
- 0 -0  8  1  5 -5 -6 -1  4  8
--1  0  3  6  1 -6 -10 6 -9  1
- 6 -5  8 -9  1  4 -5 -1 -5  5
--1 -2 -1 -5  6  7 -8 -1 10  7
--5 -6 -0 -2  9 -1 -8 10  6 -9
--9  1  9  1 -2 -3 -8  2  3 -1
--8 -8 -9  5 -8  3  0 -9  6  1
--4 -8  4 -6 -2 -4 -4  3 -5 -8
- 3  3  7  8 -0 10  8 -0 -6  3
- """
-
-
-def test_opt_region():
+def test_opt_region():  # range_entropy.pyと差が出ないか確認
     """function for testing optimal region rule function"""
     # 生成するタプルの個数
     num_tuples = random.randint(1, 10)
@@ -413,6 +399,6 @@ def test_opt_region():
         exit(1)
 
 
-for i in range(10000):
-    test_opt_region()
-print("Test Passed")
+# for i in range(10000):
+#    test_opt_region()
+# print("Test Passed")
