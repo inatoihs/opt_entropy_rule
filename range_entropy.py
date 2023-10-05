@@ -11,22 +11,6 @@ def to_normal_vector(vector):
     return (x, y)
 
 
-def is_point_on_edge(x1, y1, x2, y2, x, y, abXat, bcXbt):
-    """check if the point is on the edge"""
-    # 点が直線上にあるかどうかを判定
-    is_on_line = abXat * bcXbt == 0.0
-
-    # 点が始点を含まない辺の始点と終点の間にあるかどうかを判定
-    is_between_points = (
-        (x1 <= x <= x2 or x1 >= x >= x2)
-        and (y1 <= y <= y2 or y1 >= y >= y2)
-        and not (x1 == x and y1 == y)
-        and not (x2 == x and y2 == y)
-    )
-
-    return is_on_line and is_between_points
-
-
 def find_intersection(vector1, vector2, point1, point2) -> (float, float):
     """find the intersection of two lines"""
     # 法線ベクトルの成分を抽出し、方向ベクトルに変換
@@ -133,9 +117,6 @@ def touching_oracle(atomic_points: list, theta: (float, float)):
             max_so_far = current_sum
             max_index_l = index_l
             max_index_r = i
-
-        elif max_so_far == current_sum:  # 最大部分和が複数ある時
-            pass  # TODO
 
     # 最大部分和の範囲内のデータを合計
     max_range_data = atomic_points[max_index_l : max_index_r + 1]

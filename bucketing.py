@@ -1,5 +1,6 @@
 import pandas as pd
 from region_entropy import find_optimal_region
+from region_visualizer import visualizer
 
 filename = "diabetes.csv"
 
@@ -10,9 +11,11 @@ column_x = "BMI"
 x_bucket_num = 10
 df["x_Bin"] = pd.qcut(df[column_x], q=x_bucket_num)
 
-column_y = "Age"
-y_bucket_num = len(df["Age"].unique())
-df["y_Bin"] = df[column_y]
+column_y = "BloodPressure"
+# y_bucket_num = len(df["Age"].unique())
+y_bucket_num = 10
+# df["y_Bin"] = df[column_y]
+df["y_Bin"] = pd.qcut(df[column_y], q=y_bucket_num)
 
 # 二次元タプルを初期化
 positive = [[0] * y_bucket_num for _ in range(x_bucket_num)]
@@ -36,15 +39,26 @@ result_tuples = [
 ]
 
 # summary[i][j]にはx_Binがi番目のBinである範囲、y_Binがj番目のBinである範囲、
-#'Outcome'が1であるデータ数、'Outcome'が０であるデータ数が格納されています。
+# 'Outcome'が1であるデータ数、'Outcome'が０であるデータ数が格納されています。
 summary = []
 
 for i in range(x_bucket_num):
     summary.append(result_tuples[i * y_bucket_num : (i + 1) * y_bucket_num])
 
-_, _, region = find_optimal_region(positive, negative)
+point, v, region = find_optimal_region(positive, negative)
 
-print(region.l, region.bot, region.top)
+
+visualizer(
+    positive,
+    region.bot,
+    region.top,
+    region.l,
+    region.r,
+    x_bucket_num,
+    y_bucket_num,
+    column_x,
+    column_y,
+)
 
 """
 # 'Outcome' 列が 1 と 0 の場合に分割して集計

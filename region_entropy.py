@@ -228,8 +228,6 @@ def touching_oracle(positive: tuple, negative: tuple, theta: (float, float)):
 
 def sum_in_region(region: Region, matrix: tuple):
     """sum of matrix in region"""
-    xsize = len(region.top)
-    ysize = len(matrix) // xsize
     result = 0
     for i in range(region.l, region.r + 1):
         for j in range(region.bot[i], region.top[i] + 1):
@@ -316,7 +314,7 @@ def find_optimal_region(positive, negative):
             # print("convex hull:\n", tangent_points)
 
             # output the best rule
-            return (point_of_best_v, v_best_sofar, region)
+            return (point_of_best_v, v_best_sofar, best_region)
 
         # Step 5
         """エントロピーが最も低いIを選択します。ここで、I_ijが選択されたとします。θ=(iからj)
@@ -394,12 +392,10 @@ def test_opt_region():  # range_entropy.pyと差が出ないか確認
         positive[0].append(atomic_points[i][0])
         negative[0].append(atomic_points[i][1])
 
-    points = []
-    A = (sum(item[0] for item in atomic_points), sum(item[1] for item in atomic_points))
-    if find_optimal_region(positive, negative) != find_optimal_range(atomic_points):
+    point_v, v, _ = find_optimal_region(positive, negative)
+    if (point_v, v) != find_optimal_range(atomic_points):
         print("incorrect")
         print("atomic points:\n", atomic_points)
-        print("points: \n", points)
         exit(1)
 
 
