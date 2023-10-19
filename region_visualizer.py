@@ -3,7 +3,18 @@ from matplotlib.patches import Polygon
 
 
 def visualizer(
-    data, bot, top, left_index, right_index, x_max, y_max, column_x, column_y
+    data,
+    bot,
+    top,
+    left_index,
+    right_index,
+    x_max,
+    y_max,
+    column_x,
+    column_y,
+    barlabel,
+    xbins,
+    ybins,
 ):
     # グラフのサイズを設定
     plt.figure(figsize=(5, 5))
@@ -17,7 +28,7 @@ def visualizer(
     # 領域の線を描画するための座標を定義
     region_coords = []
 
-    shift_width = 0.055  # 領域の端っこ線をずらすための値
+    shift_width = 0.0035 * x_max  # 領域の端っこ線をずらすための値
     for i in range(left_index, right_index + 1):
         region_coords.append([i - 0.5, bot[i] - 0.5])
         region_coords.append([i + 0.5, bot[i] - 0.5])
@@ -51,43 +62,43 @@ def visualizer(
         closed=True,
         edgecolor="red",
         facecolor="none",
-        linewidth=2,
+        linewidth=3,
     )
 
     # グラフにPolygonを追加
     plt.gca().add_patch(region_polygon)
 
     # カラーバーを追加
-    plt.colorbar()
+    plt.colorbar().set_label("Number of " + barlabel)
 
     # x軸とy軸のラベルを設定
     plt.xlabel(column_x)
     plt.ylabel(column_y)
 
+    xticks_placement = [-0.5]
+    for i in range(x_max):
+        xticks_placement.append(i + 0.5)
+    yticks_placement = [-0.5]
+    for i in range(y_max):
+        yticks_placement.append(i + 0.5)
+
+    plt.xticks(xticks_placement[::2], xbins[::2])
+    plt.yticks(yticks_placement[::2], ybins[::2])
+
     # グラフを表示
     plt.show()
 
 
-"""polygonでいけそう
-import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon
+def create_bar_chart(data1, data2, chart_label):
+    # データとラベルを設定
+    data = [data1, data2]
+    labels = ["positive", "negative"]
 
-# グラフのサイズを設定
-plt.figure(figsize=(6, 6))
+    # 棒グラフを作成
+    plt.bar(labels, data)
 
-# 十字架を描画するための座標を定義
-cross_coords = [(1, 2), (2, 2), (2, 1), (3, 1), (3, 0), (2, 0), (2, 1), (1, 1)]
+    # グラフにラベルを追加
+    plt.title(chart_label)
 
-# Polygonオブジェクトを作成
-cross_polygon = Polygon(cross_coords, closed=True, edgecolor='red', facecolor='none', linewidth=2)
-
-# グラフにPolygonを追加
-plt.gca().add_patch(cross_polygon)
-
-# グラフの範囲を設定
-plt.xlim(0, 4)
-plt.ylim(-1, 3)
-
-# グラフを表示
-plt.show()
-"""
+    # グラフを表示
+    plt.show()
