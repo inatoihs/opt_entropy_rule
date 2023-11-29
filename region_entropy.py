@@ -161,10 +161,10 @@ def touching_oracle(positive: tuple, negative: tuple, theta: (float, float)):
                     fj.set(x, i, -1)
                 else:
                     fj.set(x, i, i)
-                    f.set(x, i, dval)
-                    ft.set(x, i, t.ref(x, i))
-                    fb.set(x, i, b.ref(x, i))
-                    maxj = i
+                f.set(x, i, dval)
+                ft.set(x, i, t.ref(x, i))
+                fb.set(x, i, b.ref(x, i))
+                maxj = i
             else:
                 fj.set(x, i, maxj)
                 f.set(x, i, dval2)
