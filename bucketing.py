@@ -7,7 +7,7 @@ filename = "data/diabetes.csv"
 # CSVファイルからデータを読み込む
 df = pd.read_csv(filename)
 
-column_x = "Age"
+column_x = "Glucose"
 # x_bucket_num = len(df[column_x].unique())
 x_bucket_num = 10
 # df["x_Bin"] = df[column_x]
@@ -78,6 +78,25 @@ negative_out_region = negative_all - negative_in_region
 xbins, ybins = [round(num, 1) for num in xbins], [round(num, 1) for num in ybins]
 
 
+points = positive
+barlabel = "positive"
+visualizer(
+    points,
+    region.bot,
+    region.top,
+    region.l,
+    region.r,
+    y_bucket_num,
+    x_bucket_num,
+    column_y,
+    column_x,
+    barlabel,
+    ybins,
+    xbins,
+)
+
+points = negative
+barlabel = "negative"
 visualizer(
     points,
     region.bot,

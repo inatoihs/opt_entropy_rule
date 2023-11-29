@@ -55,8 +55,8 @@ def visualizer(
             region_coords[-2][1] -= y_shift_width
             region_coords[-1][1] -= y_shift_width
     for i in range(right_index, left_index - 1, -1):
-        region_coords.append([xbins[i + 1], ybins[top[i]]])
-        region_coords.append([xbins[i], ybins[top[i]]])
+        region_coords.append([xbins[i + 1], ybins[top[i] + 1]])
+        region_coords.append([xbins[i], ybins[top[i] + 1]])
         if i == 0:
             region_coords[-1][0] += x_shift_width
         elif i == x_max - 1:
