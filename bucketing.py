@@ -11,15 +11,26 @@ column_x = "Glucose"
 # x_bucket_num = len(df[column_x].unique())
 x_bucket_num = 10
 # df["x_Bin"] = df[column_x]
-df["x_Bin"], xbins = pd.qcut(df[column_x], q=x_bucket_num, retbins=True)
-x_custom_sort_order = ["Unhealthy", "Average", "Healthy"]
+while x_bucket_num > 0:
+    try:
+        df["x_Bin"], xbins = pd.qcut(df[column_x], q=x_bucket_num, retbins=True)
+        break
+    except ValueError:
+        x_bucket_num -= 1
+        continue
+
 
 column_y = "BMI"
 # y_bucket_num = len(df[column_y].unique())
 y_bucket_num = 10
 # df["y_Bin"] = df[column_y]
-df["y_Bin"], ybins = pd.qcut(df[column_y], q=y_bucket_num, retbins=True)
-y_custom_sort_order = ["Unhealthy", "Average", "Healthy"]
+while y_bucket_num > 0:
+    try:
+        df["y_Bin"], ybins = pd.qcut(df[column_y], q=y_bucket_num, retbins=True)
+        break
+    except ValueError:
+        y_bucket_num -= 1
+        continue
 
 objective_column = "Outcome"
 
@@ -53,6 +64,8 @@ for i in range(x_bucket_num):
     summary.append(result_tuples[i * y_bucket_num : (i + 1) * y_bucket_num])
 
 point, v, region = find_optimal_region(positive, negative)
+
+print("エントロピー：", v)
 
 # グラフに表示するデータを決定
 posneg = [positive, negative]
@@ -144,4 +157,76 @@ print(result_tuples[0])
 lower_val, _ = result_tuples[0][0].left, result_tuples[0][0].right
 _, upper_val = result_tuples[3][0].left, result_tuples[3][0].right
 print("the range of bucket 0 to 3", "(", lower_val, upper_val, "]")
+
+
+全ての組み合わせを試すには以下
+column_list = [
+    "Pregnancies",
+    "Glucose",
+    "BloodPressure",
+    "SkinThickness",
+    "Insulin",
+    "BMI",
+    "DiabetesPedigreeFunction",
+    "Age",
+]
+v_list = []
+for i in range(len(column_list)):
+    for j in range(len(column_list)):
+        if i == j:
+            continue
+        column_x = column_list[i]
+        column_y = column_list[j]
+        x_bucket_num = 10
+        y_bucket_num = 10
+        while x_bucket_num > 0:
+            try:
+                df["x_Bin"], xbins = pd.qcut(df[column_x], q=x_bucket_num, retbins=True)
+                break
+            except ValueError:
+                x_bucket_num -= 1
+                continue
+
+        while y_bucket_num > 0:
+            try:
+                df["y_Bin"], ybins = pd.qcut(df[column_y], q=y_bucket_num, retbins=True)
+                break
+            except ValueError:
+                y_bucket_num -= 1
+                continue
+
+        objective_column = "Outcome"
+
+        # 二次元タプルを初期化
+        positive = [[0] * y_bucket_num for _ in range(x_bucket_num)]
+        negative = [[0] * y_bucket_num for _ in range(x_bucket_num)]
+
+        # objective_num 列が 1 と 0 の場合にデータを分割して集計
+        # key=lambda x: x_custom_sort_order.index(x)は対象が文字列の時だけ書く
+        for ii, x_bin in enumerate(sorted(df["x_Bin"].unique().tolist())):
+            for jj, y_bin in enumerate(sorted(df["y_Bin"].unique().tolist())):
+                subset = df[(df["x_Bin"] == x_bin) & (df["y_Bin"] == y_bin)]
+                positive_count = len(subset[subset[objective_column] == 1])
+                negative_count = len(subset[subset[objective_column] == 0])
+                positive[ii][jj] = positive_count
+                negative[ii][jj] = negative_count
+
+        point, v, region = find_optimal_region(positive, negative)
+        print("column_x:", column_x, "column_y:", column_y)
+        print("エントロピー：", v)
+        print("")
+        v_list.append((column_x, column_y, v))
+
+v_list.sort(key=lambda x: x[2])
+print(v_list[:10])
+Out: [('Age', 'Glucose', 0.5127452362273281), 
+    ('Glucose', 'BMI', 0.515130279769151),
+    ('BMI', 'Glucose', 0.5165017267492149), 
+     ('Glucose', 'Age', 0.5167451646829311),
+      ('Glucose', 'BloodPressure', 0.524783124932096),
+     ('Glucose', 'DiabetesPedigreeFunction', 0.5369065024623783),
+       ('Pregnancies', 'Glucose', 0.537696314321605), 
+       ('Glucose', 'Pregnancies', 0.537696314321605), 
+       ('BloodPressure', 'Glucose', 0.5390333472417089), 
+       ('Age', 'BMI', 0.540477539689918)]
 """
