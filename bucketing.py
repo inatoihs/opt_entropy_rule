@@ -2,147 +2,204 @@ import pandas as pd
 from region_entropy import find_optimal_region, sum_in_region
 from region_visualizer import visualizer, create_bar_chart
 
-filename = "data/diabetes.csv"
 
-# CSVファイルからデータを読み込む
-df = pd.read_csv(filename)
+def main():
+    filename = "data/diabetes.csv"
 
-column_x = "Glucose"
-# x_bucket_num = len(df[column_x].unique())
-x_bucket_num = 10
-# df["x_Bin"] = df[column_x]
-while x_bucket_num > 0:
-    try:
-        df["x_Bin"], xbins = pd.qcut(df[column_x], q=x_bucket_num, retbins=True)
-        break
-    except ValueError:
-        x_bucket_num -= 1
-        continue
+    # CSVファイルからデータを読み込む
+    df = pd.read_csv(filename)
 
+    column_x = "Glucose"
+    # x_bucket_num = len(df[column_x].unique())
+    x_bucket_num = 10
+    # df["x_Bin"] = df[column_x]
+    while x_bucket_num > 0:
+        try:
+            df["x_Bin"], xbins = pd.qcut(df[column_x], q=x_bucket_num, retbins=True)
+            break
+        except ValueError:
+            x_bucket_num -= 1
+            continue
 
-column_y = "BMI"
-# y_bucket_num = len(df[column_y].unique())
-y_bucket_num = 10
-# df["y_Bin"] = df[column_y]
-while y_bucket_num > 0:
-    try:
-        df["y_Bin"], ybins = pd.qcut(df[column_y], q=y_bucket_num, retbins=True)
-        break
-    except ValueError:
-        y_bucket_num -= 1
-        continue
+    column_y = "BMI"
+    # y_bucket_num = len(df[column_y].unique())
+    y_bucket_num = 10
+    # df["y_Bin"] = df[column_y]
+    while y_bucket_num > 0:
+        try:
+            df["y_Bin"], ybins = pd.qcut(df[column_y], q=y_bucket_num, retbins=True)
+            break
+        except ValueError:
+            y_bucket_num -= 1
+            continue
 
-objective_column = "Outcome"
+    objective_column = "Outcome"
 
-# 二次元タプルを初期化
-positive = [[0] * y_bucket_num for _ in range(x_bucket_num)]
-negative = [[0] * y_bucket_num for _ in range(x_bucket_num)]
+    # 二次元タプルを初期化
+    positive = [[0] * y_bucket_num for _ in range(x_bucket_num)]
+    negative = [[0] * y_bucket_num for _ in range(x_bucket_num)]
 
-# objective_num 列が 1 と 0 の場合にデータを分割して集計
-# key=lambda x: x_custom_sort_order.index(x)は対象が文字列の時だけ書く
-for i, x_bin in enumerate(sorted(df["x_Bin"].unique().tolist())):
-    for j, y_bin in enumerate(sorted(df["y_Bin"].unique().tolist())):
-        subset = df[(df["x_Bin"] == x_bin) & (df["y_Bin"] == y_bin)]
-        positive_count = len(subset[subset[objective_column] == 1])
-        negative_count = len(subset[subset[objective_column] == 0])
-        positive[i][j] = positive_count
-        negative[i][j] = negative_count
+    # objective_num 列が 1 と 0 の場合にデータを分割して集計
+    # key=lambda x: x_custom_sort_order.index(x)は対象が文字列の時だけ書く
+    for i, x_bin in enumerate(sorted(df["x_Bin"].unique().tolist())):
+        for j, y_bin in enumerate(sorted(df["y_Bin"].unique().tolist())):
+            subset = df[(df["x_Bin"] == x_bin) & (df["y_Bin"] == y_bin)]
+            positive_count = len(subset[subset[objective_column] == 1])
+            negative_count = len(subset[subset[objective_column] == 0])
+            positive[i][j] = positive_count
+            negative[i][j] = negative_count
 
+    result = (
+        df.groupby(["x_Bin", "y_Bin", objective_column]).size().unstack(fill_value=0)
+    )
 
-result = df.groupby(["x_Bin", "y_Bin", objective_column]).size().unstack(fill_value=0)
+    # タプルのリストを作成
+    result_tuples = [
+        (index[0], index[1], row[1], row[0]) for index, row in result.iterrows()
+    ]
 
-# タプルのリストを作成
-result_tuples = [
-    (index[0], index[1], row[1], row[0]) for index, row in result.iterrows()
-]
+    # summary[i][j]にはx_Binがi番目のBinである範囲、y_Binがj番目のBinである範囲、
+    # 'Outcome'が1であるデータ数、'Outcome'が０であるデータ数が格納されています。
+    summary = []
 
-# summary[i][j]にはx_Binがi番目のBinである範囲、y_Binがj番目のBinである範囲、
-# 'Outcome'が1であるデータ数、'Outcome'が０であるデータ数が格納されています。
-summary = []
+    for i in range(x_bucket_num):
+        summary.append(result_tuples[i * y_bucket_num : (i + 1) * y_bucket_num])
 
-for i in range(x_bucket_num):
-    summary.append(result_tuples[i * y_bucket_num : (i + 1) * y_bucket_num])
+    point, v, region = find_optimal_region(positive, negative)
 
-point, v, region = find_optimal_region(positive, negative)
+    # objective_num列が1であるデータの数を数える
+    positive_all = (df[objective_column] == 1).sum()
 
-print("エントロピー：", v)
+    # objective_num列が0であるデータの数を数える
+    negative_all = (df[objective_column] == 0).sum()
 
-# グラフに表示するデータを決定
-posneg = [positive, negative]
-points = posneg[0]
+    positive_in_region = sum_in_region(region, positive)
+    negative_in_region = sum_in_region(region, negative)
 
-if points == positive:
+    positive_out_region = positive_all - positive_in_region
+    negative_out_region = negative_all - negative_in_region
+
+    xbins, ybins = [round(num, 1) for num in xbins], [round(num, 1) for num in ybins]
+
+    points = positive
     barlabel = "positive"
-elif points == negative:
+    visualizer(
+        points,
+        region.bot,
+        region.top,
+        region.l,
+        region.r,
+        y_bucket_num,
+        x_bucket_num,
+        column_y,
+        column_x,
+        barlabel,
+        ybins,
+        xbins,
+    )
+
+    points = negative
     barlabel = "negative"
+    visualizer(
+        points,
+        region.bot,
+        region.top,
+        region.l,
+        region.r,
+        y_bucket_num,
+        x_bucket_num,
+        column_y,
+        column_x,
+        barlabel,
+        ybins,
+        xbins,
+    )
 
-# objective_num列が1であるデータの数を数える
-positive_all = (df[objective_column] == 1).sum()
+    create_bar_chart(
+        positive_all,
+        negative_all,
+        "Original Data Distribution",
+    )
 
-# objective_num列が0であるデータの数を数える
-negative_all = (df[objective_column] == 0).sum()
+    create_bar_chart(
+        positive_in_region,
+        negative_in_region,
+        "Data Distribution inside the Region",
+    )
+    create_bar_chart(
+        positive_out_region,
+        negative_out_region,
+        "Data Distribution outside the Region",
+    )
 
-positive_in_region = sum_in_region(region, positive)
-negative_in_region = sum_in_region(region, negative)
 
-positive_out_region = positive_all - positive_in_region
-negative_out_region = negative_all - negative_in_region
-
-xbins, ybins = [round(num, 1) for num in xbins], [round(num, 1) for num in ybins]
-
-
-points = positive
-barlabel = "positive"
-visualizer(
-    points,
-    region.bot,
-    region.top,
-    region.l,
-    region.r,
-    y_bucket_num,
-    x_bucket_num,
-    column_y,
+def compute_region(
+    df,
     column_x,
-    barlabel,
-    ybins,
-    xbins,
-)
-
-points = negative
-barlabel = "negative"
-visualizer(
-    points,
-    region.bot,
-    region.top,
-    region.l,
-    region.r,
-    y_bucket_num,
-    x_bucket_num,
     column_y,
-    column_x,
-    barlabel,
-    ybins,
-    xbins,
-)
+    x_bucket_num=10,
+    y_bucket_num=10,
+    objective_column="Predicted",
+):
+    # x_bucket_num = len(df[column_x].unique())
+    df["x_Bin"] = df[column_x]
+    while x_bucket_num > 0:
+        try:
+            df["x_Bin"], xbins = pd.qcut(df[column_x], q=x_bucket_num, retbins=True)
+            break
+        except ValueError:
+            x_bucket_num -= 1
+            continue
 
-create_bar_chart(
-    positive_all,
-    negative_all,
-    "Original Data Distribution",
-)
+    # y_bucket_num = len(df[column_y].unique())
+    df["y_Bin"] = df[column_y]
+    while y_bucket_num > 0:
+        try:
+            df["y_Bin"], ybins = pd.qcut(df[column_y], q=y_bucket_num, retbins=True)
+            break
+        except ValueError:
+            y_bucket_num -= 1
+            continue
+
+    # 二次元タプルを初期化
+    positive = [[0] * y_bucket_num for _ in range(x_bucket_num)]
+    negative = [[0] * y_bucket_num for _ in range(x_bucket_num)]
+    posandneg = [[0] * y_bucket_num for _ in range(x_bucket_num)]
+
+    # objective_num 列が 1 と 0 の場合にデータを分割して集計
+    # key=lambda x: x_custom_sort_order.index(x)は対象が文字列の時だけ書く
+    for i, x_bin in enumerate(sorted(df["x_Bin"].unique().tolist())):
+        for j, y_bin in enumerate(sorted(df["y_Bin"].unique().tolist())):
+            subset = df[(df["x_Bin"] == x_bin) & (df["y_Bin"] == y_bin)]
+            positive_count = len(subset[subset[objective_column] == 1])
+            negative_count = len(subset[subset[objective_column] == 0])
+            positive[i][j] = positive_count
+            negative[i][j] = negative_count
+            posandneg[i][j] = positive_count + negative_count
+
+    result = (
+        df.groupby(["x_Bin", "y_Bin", objective_column]).size().unstack(fill_value=0)
+    )
+
+    point, v, region = find_optimal_region(positive, negative)
+
+    xbins, ybins = [round(num, 1) for num in xbins], [round(num, 1) for num in ybins]
+    return (
+        df,
+        region,
+        v,
+        xbins,
+        ybins,
+        positive,
+        negative,
+        posandneg,
+        x_bucket_num,
+        y_bucket_num,
+    )
 
 
-create_bar_chart(
-    positive_in_region,
-    negative_in_region,
-    "Data Distribution inside the Region",
-)
-create_bar_chart(
-    positive_out_region,
-    negative_out_region,
-    "Data Distribution outside the Region",
-)
-
+if __name__ == "__main__":
+    main()
 
 """
 # 'Outcome' 列が 1 と 0 の場合に分割して集計

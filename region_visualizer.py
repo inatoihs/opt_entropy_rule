@@ -16,6 +16,9 @@ def visualizer(
     barlabel,
     xbins,
     ybins,
+    highlight=False,
+    highlight_x=None,
+    highlight_y=None,
 ):
     # グラフのサイズを設定
     plt.figure(figsize=(5, 5))
@@ -77,8 +80,25 @@ def visualizer(
         linewidth=2,
     )
 
+    if highlight:
+        highlight_coords = [
+            [xbins[highlight_x], ybins[highlight_y]],
+            [xbins[highlight_x + 1], ybins[highlight_y]],
+            [xbins[highlight_x + 1], ybins[highlight_y + 1]],
+            [xbins[highlight_x], ybins[highlight_y + 1]],
+        ]
+        highlight_polygon = Polygon(
+            highlight_coords,
+            closed=True,
+            edgecolor="blue",
+            facecolor="none",
+            linewidth=1.5,
+        )
+
     # グラフにPolygonを追加
     plt.gca().add_patch(region_polygon)
+    if highlight:
+        plt.gca().add_patch(highlight_polygon)
 
     # カラーバーを追加
     plt.colorbar().set_label("Number of " + barlabel)
