@@ -44,8 +44,8 @@ def visualizer(
         # 領域の線を描画するための座標を定義
         region_coords = []
 
-        x_shift_width = 0.01 * x_max  # 領域の端っこ線をずらすための値
-        y_shift_width = 0.01 * y_max  # 領域の端っこ線をずらすための値
+        x_shift_width = (xbins[-1] - xbins[0]) / 200  # 領域の端っこ線をずらすための値
+        y_shift_width = (ybins[-1] - ybins[0]) / 200  # 領域の端っこ線をずらすための値
         for i in range(left_index, right_index + 1):
             region_coords.append([xbins[i], ybins[bot[i]]])
             region_coords.append([xbins[i + 1], ybins[bot[i]]])
@@ -143,10 +143,10 @@ def visualizer(
 
         if highlight:
             highlight_coords = [
-                [i + 0.5, highlight_y - 0.5],
-                [i + 0.5, highlight_y + 0.5],
-                [i - 0.5, highlight_y + 0.5],
-                [i - 0.5, highlight_y - 0.5],
+                [highlight_x + 0.5, highlight_y - 0.5],
+                [highlight_x + 0.5, highlight_y + 0.5],
+                [highlight_x - 0.5, highlight_y + 0.5],
+                [highlight_x - 0.5, highlight_y - 0.5],
             ]
             highlight_polygon = Polygon(
                 highlight_coords,
