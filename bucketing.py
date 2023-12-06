@@ -140,8 +140,8 @@ def compute_region(
     x_bucket_num=10,
     y_bucket_num=10,
     objective_column="Predicted",
-    x_round=1,
-    y_round=1,
+    x_round=2,
+    y_round=2,
 ):
     # x_bucket_num = len(df[column_x].unique())
     df["x_Bin"] = df[column_x]
@@ -185,6 +185,7 @@ def compute_region(
 
     point, v, region = find_optimal_region(positive, negative)
 
+    x_round, y_round = x_round, y_round
     xbins, ybins = [round(num, x_round) for num in xbins], [
         round(num, y_round) for num in ybins
     ]
